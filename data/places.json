@@ -1,0 +1,20 @@
+[
+    {
+        "name": "place in USA",
+        "city": "las vegas",
+        "country": "Nevada",
+        "notes": "I visited this place lately",
+        "id": "ebb4fff3-9267-4202-a2f5-8bd19403d8b1",
+        "visited": "False",
+        "priority": "4"
+    },
+    {
+        "name": "america",
+        "city": "seattle",
+        "country": "wassington",
+        "notes": "don't come back",
+        "id": "eab29603-9e09-4069-b97e-f68705e82dfd",
+        "visited": "True",
+        "priority": "4"
+    }
+]

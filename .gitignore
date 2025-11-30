@@ -1,0 +1,37 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Virtual env
+venv/
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+
+# Docker
+*.tar
+docker-compose.override.yml
+
+# Tests
+.pytest_cache/
+.coverage
+htmlcov/
+
+# IDE / Editor
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Streamlit
+.streamlit/
+
+# Build files
+dist/
+build/

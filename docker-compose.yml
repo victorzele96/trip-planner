@@ -1,0 +1,71 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:16
+    container_name: trip_planner_db
+    restart: always
+    env_file:
+      - .env
+    environment:
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_DB: ${DB_NAME}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  app:    
+    build: .
+    image: victorzele96/trip_planner-app:latest
+    container_name: trip_planner_app
+    restart: always
+    env_file:
+      - .env
+    ports:
+      - "${STREAMLIT_PORT}:${STREAMLIT_PORT}"
+    depends_on:
+      - db
+
+  #DB Configuration
+  test_db:
+    image: postgres:16
+    container_name: trip_planner_db_test
+    env_file:
+    - .env.test
+    environment:
+      POSTGRES_DB: test_db
+      POSTGRES_USER: test_user
+      POSTGRES_PASSWORD: test_password
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata_test:/var/lib/postgresql/data
+    restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $DB_USER -d $DB_NAME"]
+      interval: 2s
+      retries: 10
+      start_period: 5s
+
+  tests:
+    build: .
+    container_name: trip_planner_tests
+    env_file:
+      - .env.test
+    environment:
+      PYTHONPATH: /trip_planner
+    depends_on:
+      test_db:
+        condition: service_healthy
+    working_dir: /trip_planner
+    command: pytest -v tests
+
+
+
+
+
+volumes:
+  pgdata:
+  pgdata_test:
