@@ -36,13 +36,15 @@ pipeline {
         stage('Manage App') {
             steps {
                 script {
-                    if (params.ACTION == 'start') {
-                        bat 'docker compose up -d --build app'
-                    } else if (params.ACTION == 'stop') {
-                        bat 'docker compose down || exit /b 0'
+                    def envFile = params.ENV_FILE ?: '.env'
+                    if (params.ACTION == 'START') {
+                        bat "docker compose --env-file ${envFile} up -d --build app"
+                    } else if (params.ACTION == 'STOP') {
+                        bat "docker compose --env-file ${envFile} down"
                     }
                 }
             }
         }
+
     }
 }
