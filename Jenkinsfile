@@ -12,10 +12,10 @@ pipeline {
             steps {
                 withCredentials([usernamePassword(credentialsId: 'trip_db_user', usernameVariable: 'DB_USER', passwordVariable: 'DB_PASSWORD')]) {
                     script {
-                        def DB_HOST = credentials('DB_HOST')
-                        def DB_PORT = credentials('DB_PORT')
-                        def DB_NAME = credentials('DB_NAME')
-                        def STREAMLIT_PORT = credentials('STREAMLIT_PORT')
+                        string(credentialsId: 'DB_HOST', variable: 'DB_HOST'),
+                        string(credentialsId: 'DB_PORT', variable: 'DB_PORT'),
+                        string(credentialsId: 'DB_NAME', variable: 'DB_NAME'),
+                        string(credentialsId: 'STREAMLIT_PORT', variable: 'STREAMLIT_PORT')
 
                         bat """
                         echo DB_HOST=%DB_HOST% > .env
