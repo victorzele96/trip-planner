@@ -36,7 +36,7 @@ pipeline {
         stage('Manage App') {
             steps {
                 script {
-                    def envFile = params.ENV_FILE ?: '.env'
+                    def envFile = '.env'
                     if (params.ACTION.toLowerCase() == 'start') {
                         bat "docker compose --env-file ${envFile} up -d --build app"
                     } else if (params.ACTION.toLowerCase() == 'stop') {
