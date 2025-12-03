@@ -17,15 +17,13 @@ pipeline {
                         def DB_NAME = credentials('DB_NAME')
                         def STREAMLIT_PORT = credentials('STREAMLIT_PORT')
 
-                        sh """
-                        cat > .env <<EOF
-                            DB_HOST=${DB_HOST}
-                            DB_PORT=${DB_PORT}
-                            DB_NAME=${DB_NAME}
-                            DB_USER=${DB_USER}
-                            DB_PASSWORD=${DB_PASSWORD}
-                            STREAMLIT_PORT=${STREAMLIT_PORT}
-                            EOF
+                        bat """
+                        echo DB_HOST=%DB_HOST% > .env
+                        echo DB_PORT=%DB_PORT% >> .env
+                        echo DB_NAME=%DB_NAME% >> .env
+                        echo DB_USER=%DB_USER% >> .env
+                        echo DB_PASSWORD=%DB_PASSWORD% >> .env
+                        echo STREAMLIT_PORT=%STREAMLIT_PORT% >> .env
                         """
                     }
                 }
@@ -34,14 +32,14 @@ pipeline {
 
         stage('Build & Deploy App') {
             steps {
-                sh 'docker compose up -d --build app'
+                bat 'docker compose up -d --build app'
             }
         }
     }
 
     post {
         always {
-            sh 'docker compose down -v || true'
+            bat 'docker compose down -v || exit /b 0'
         }
     }
 }
