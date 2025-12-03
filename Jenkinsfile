@@ -37,9 +37,9 @@ pipeline {
             steps {
                 script {
                     def envFile = params.ENV_FILE ?: '.env'
-                    if (params.ACTION == 'START') {
+                    if (params.ACTION.toLowerCase() == 'start') {
                         bat "docker compose --env-file ${envFile} up -d --build app"
-                    } else if (params.ACTION == 'STOP') {
+                    } else if (params.ACTION.toLowerCase() == 'stop') {
                         bat "docker compose --env-file ${envFile} down"
                     }
                 }
