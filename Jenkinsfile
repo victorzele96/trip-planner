@@ -2,38 +2,48 @@ pipeline {
     agent any
 
     parameters {
-        choice(name: 'ACTION', choices: ['START', 'STOP'], description: 'Start or stop the services')
-        string(name: 'ENVIRONMENT', defaultValue: 'app', description: 'app or tests')
+        choice(name: 'ACTION', choices: ['START', 'STOP'], description: 'Start or stop the app')
     }
 
     stages {
+
         stage('Checkout') {
             steps {
                 git url: 'https://github.com/victorzele96/trip-planner.git', branch: 'main', credentialsId: 'github-token'
             }
         }
 
-        stage('Set Env File') {
+        stage('Create App Env') {
+            when {
+                expression { params.ACTION == 'START' }
+            }
             steps {
-                script {
-                    def envFile = (params.ENVIRONMENT.toLowerCase() == 'tests') ? '.env.test' : '.env'
-                    env.ENV_FILE = envFile
-                    echo "Using env file: ${envFile}"
+                withCredentials([
+                    usernamePassword(credentialsId: 'trip_db_user', usernameVariable: 'DB_USER', passwordVariable: 'DB_PASSWORD'),
+                    string(credentialsId: 'DB_HOST', variable: 'DB_HOST'),
+                    string(credentialsId: 'DB_PORT', variable: 'DB_PORT'),
+                    string(credentialsId: 'DB_NAME', variable: 'DB_NAME'),
+                    string(credentialsId: 'STREAMLIT_PORT', variable: 'STREAMLIT_PORT')
+                ]) {
+                    bat """
+                    echo DB_HOST=%DB_HOST% > .env
+                    echo DB_PORT=%DB_PORT% >> .env
+                    echo DB_NAME=%DB_NAME% >> .env
+                    echo DB_USER=%DB_USER% >> .env
+                    echo DB_PASSWORD=%DB_PASSWORD% >> .env
+                    echo STREAMLIT_PORT=%STREAMLIT_PORT% >> .env
+                    """
                 }
             }
         }
 
-        stage('Manage Services') {
+        stage('Deploy / Stop App') {
             steps {
                 script {
-                    if (params.ACTION.toLowerCase() == 'start') {
-                        if (params.ENVIRONMENT.toLowerCase() == 'app') {
-                            bat "docker compose --env-file ${env.ENV_FILE} up -d --build app db"
-                        } else if (params.ENVIRONMENT.toLowerCase() == 'tests') {
-                            bat "docker compose --env-file ${env.ENV_FILE} up -d --build test_db tests"
-                        }
-                    } else if (params.ACTION.toLowerCase() == 'stop') {
-                        bat "docker compose --env-file ${env.ENV_FILE} down"
+                    if (params.ACTION == 'START') {
+                        bat "docker compose --env-file .env up -d --build app db"
+                    } else {
+                        bat "docker compose down || exit /b 0"
                     }
                 }
             }
