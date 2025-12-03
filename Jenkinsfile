@@ -1,6 +1,10 @@
 pipeline {
     agent any
 
+    parameters {
+        choice(name: 'ACTION', choices: ['start', 'stop'], description: 'Start or stop the app')
+    }
+
     stages {
         stage('Checkout') {
             steps {
@@ -8,38 +12,37 @@ pipeline {
             }
         }
 
-    stage('Create App env') {
-        steps {
-            withCredentials([
-                usernamePassword(credentialsId: 'trip_db_user', usernameVariable: 'DB_USER', passwordVariable: 'DB_PASSWORD'),
-                string(credentialsId: 'DB_HOST', variable: 'DB_HOST'),
-                string(credentialsId: 'DB_PORT', variable: 'DB_PORT'),
-                string(credentialsId: 'DB_NAME', variable: 'DB_NAME'),
-                string(credentialsId: 'STREAMLIT_PORT', variable: 'STREAMLIT_PORT')
-            ]) {
-                bat """
-                echo DB_HOST=%DB_HOST% > .env
-                echo DB_PORT=%DB_PORT% >> .env
-                echo DB_NAME=%DB_NAME% >> .env
-                echo DB_USER=%DB_USER% >> .env
-                echo DB_PASSWORD=%DB_PASSWORD% >> .env
-                echo STREAMLIT_PORT=%STREAMLIT_PORT% >> .env
-                """
-            }
-        }
-    }
-
-
-        stage('Build & Deploy App') {
+        stage('Create App env') {
             steps {
-                bat 'docker compose up -d --build app'
+                withCredentials([
+                    usernamePassword(credentialsId: 'trip_db_user', usernameVariable: 'DB_USER', passwordVariable: 'DB_PASSWORD'),
+                    string(credentialsId: 'DB_HOST', variable: 'DB_HOST'),
+                    string(credentialsId: 'DB_PORT', variable: 'DB_PORT'),
+                    string(credentialsId: 'DB_NAME', variable: 'DB_NAME'),
+                    string(credentialsId: 'STREAMLIT_PORT', variable: 'STREAMLIT_PORT')
+                ]) {
+                    bat """
+                    echo DB_HOST=%DB_HOST% > .env
+                    echo DB_PORT=%DB_PORT% >> .env
+                    echo DB_NAME=%DB_NAME% >> .env
+                    echo DB_USER=%DB_USER% >> .env
+                    echo DB_PASSWORD=%DB_PASSWORD% >> .env
+                    echo STREAMLIT_PORT=%STREAMLIT_PORT% >> .env
+                    """
+                }
             }
         }
-    }
 
-    post {
-        always {
-            bat 'docker compose down -v || exit /b 0'
+        stage('Manage App') {
+            steps {
+                script {
+                    if (params.ACTION == 'start') {
+                        bat 'docker compose up -d --build app'
+                    } else if (params.ACTION == 'stop') {
+                        bat 'docker compose down || exit /b 0'
+                    }
+                }
+            }
         }
     }
 }
