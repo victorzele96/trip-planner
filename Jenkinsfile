@@ -16,7 +16,7 @@ pipeline {
         stage('Set Env File') {
             steps {
                 script {
-                    def envFile = (params.ENVIRONMENT.toUpperCase() == 'tests') ? '.env.test' : '.env'
+                    def envFile = (params.ENVIRONMENT.toLowerCase() == 'tests') ? '.env.test' : '.env'
                     env.ENV_FILE = envFile
                     echo "Using env file: ${envFile}"
                 }
