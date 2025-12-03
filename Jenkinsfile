@@ -45,6 +45,12 @@ pipeline {
                     if (params.ACTION == 'start') {
                         // Starting app profile
                         bat "docker compose --profile app --env-file .env up -d --build"
+
+
+                            echo "===================================="
+                            echo " App is running:"
+                            echo " http://localhost:8501"
+                            echo "===================================="
                     } else {
                         // Stoping app profile
                         bat "docker compose --profile app down || exit /b 0"
