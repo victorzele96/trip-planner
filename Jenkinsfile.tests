@@ -1,0 +1,46 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Checkout') {
+            steps {
+                git url: 'https://github.com/victorzele96/trip-planner.git', branch: 'main', credentialsId: 'github-token'
+            }
+        }
+
+        stage('Create Test env') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'trip_db_user_test', usernameVariable: 'DB_USER', passwordVariable: 'DB_PASSWORD')]) {
+                    script {
+                        def DB_HOST = credentials('DB_HOST')
+                        def DB_PORT = credentials('DB_PORT')
+                        def DB_NAME = credentials('DB_NAME')
+
+                        sh """
+                        cat > .env.test <<EOF
+                            DB_HOST=${DB_HOST}
+                            DB_PORT=${DB_PORT_TEST}
+                            DB_NAME=${DB_NAME_TEST}
+                            DB_USER=${DB_USER}
+                            DB_PASSWORD=${DB_PASSWORD}
+                            EOF
+                        """
+                    }
+                }
+            }
+        }
+
+        stage('Build & Run Tests') {
+            steps {
+                sh 'docker compose up -d test_db'
+                sh 'docker compose run --rm tests'
+            }
+        }
+    }
+
+    post {
+        always {
+            sh 'docker compose down -v || true'
+        }
+    }
+}

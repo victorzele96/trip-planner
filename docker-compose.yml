@@ -62,10 +62,6 @@ services:
     working_dir: /trip_planner
     command: pytest -v tests
 
-
-
-
-
 volumes:
   pgdata:
   pgdata_test:
