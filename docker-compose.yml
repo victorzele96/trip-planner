@@ -2,6 +2,7 @@ version: "3.9"
 
 services:
   db:
+    profiles: ["app"]
     image: postgres:16
     container_name: trip_planner_db
     restart: always
@@ -17,6 +18,7 @@ services:
       - pgdata:/var/lib/postgresql/data
 
   app:    
+    profiles: ["app"]
     build: .
     image: victorzele96/trip_planner-app:latest
     container_name: trip_planner_app
@@ -30,6 +32,7 @@ services:
 
   #DB Configuration
   test_db:
+    profiles: ["tests"]
     image: postgres:16
     container_name: trip_planner_db_test
     env_file:
@@ -50,6 +53,7 @@ services:
       start_period: 5s
 
   tests:
+    profiles: ["tests"]
     build: .
     container_name: trip_planner_tests
     env_file:

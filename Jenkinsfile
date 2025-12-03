@@ -2,20 +2,22 @@ pipeline {
     agent any
 
     parameters {
-        choice(name: 'ACTION', choices: ['START', 'STOP'], description: 'Start or stop the app')
+        choice(name: 'ACTION', choices: ['start', 'stop'], description: 'Start or stop the app')
     }
 
     stages {
 
         stage('Checkout') {
             steps {
-                git url: 'https://github.com/victorzele96/trip-planner.git', branch: 'main', credentialsId: 'github-token'
+                git url: 'https://github.com/victorzele96/trip-planner.git',
+                    branch: 'main',
+                    credentialsId: 'github-token'
             }
         }
 
         stage('Create App Env') {
             when {
-                expression { params.ACTION == 'START' }
+                expression { params.ACTION == 'start' }
             }
             steps {
                 withCredentials([
@@ -40,10 +42,12 @@ pipeline {
         stage('Deploy / Stop App') {
             steps {
                 script {
-                    if (params.ACTION == 'START') {
-                        bat "docker compose --env-file .env up -d --build app db"
+                    if (params.ACTION == 'start') {
+                        // Starting app profile
+                        bat "docker compose --profile app --env-file .env up -d --build"
                     } else {
-                        bat "docker compose down || exit /b 0"
+                        // Stoping app profile
+                        bat "docker compose --profile app down || exit /b 0"
                     }
                 }
             }
