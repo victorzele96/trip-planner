@@ -41,8 +41,8 @@ services:
       POSTGRES_DB: test_db
       POSTGRES_USER: test_user
       POSTGRES_PASSWORD: test_password
-    ports:
-      - "5433:5432"
+    # ports:
+    #   - "5433:5432"
     volumes:
       - pgdata_test:/var/lib/postgresql/data
     restart: always
@@ -58,6 +58,8 @@ services:
     container_name: trip_planner_tests
     env_file:
       - .env.test
+    ports:
+      - "${STREAMLIT_PORT}:${STREAMLIT_PORT}"
     environment:
       PYTHONPATH: /trip_planner
     depends_on:
