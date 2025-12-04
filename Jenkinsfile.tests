@@ -10,37 +10,33 @@ pipeline {
 
         stage('Create Test env') {
             steps {
-                withCredentials([usernamePassword(credentialsId: 'trip_db_user_test', usernameVariable: 'DB_USER', passwordVariable: 'DB_PASSWORD')]) {
-                    script {
-                        def DB_HOST = credentials('DB_HOST')
-                        def DB_PORT = credentials('DB_PORT')
-                        def DB_NAME = credentials('DB_NAME')
-
-                        sh """
-                        cat > .env.test <<EOF
-                            DB_HOST=${DB_HOST}
-                            DB_PORT=${DB_PORT_TEST}
-                            DB_NAME=${DB_NAME_TEST}
-                            DB_USER=${DB_USER}
-                            DB_PASSWORD=${DB_PASSWORD}
-                            EOF
-                        """
-                    }
+                withCredentials([usernamePassword(credentialsId: 'trip_db_user_test', usernameVariable: 'DB_USER', passwordVariable: 'DB_PASSWORD'),
+                    string(credentialsId: 'DB_HOST_TEST', variable: 'DB_HOST_TEST'),
+                    string(credentialsId: 'DB_PORT_TEST', variable: 'DB_PORT_TEST'),
+                    string(credentialsId: 'DB_NAME_TEST', variable: 'DB_NAME_TEST')
+                ]) {
+                    bat """
+                    echo DB_HOST=%DB_HOST_TEST% > .env.test
+                    echo DB_PORT=%DB_PORT_TEST% >> .env.test
+                    echo DB_NAME=%DB_NAME_TEST% >> .env.test
+                    echo DB_USER=%DB_USER% >> .env.test
+                    echo DB_PASSWORD=%DB_PASSWORD% >> .env.test
+                    """
                 }
             }
         }
 
         stage('Build & Run Tests') {
             steps {
-                sh 'docker compose up -d test_db'
-                sh 'docker compose run --rm tests'
+                bat 'docker compose  --profile tests --env-file .env.test up -d test_db'
+                bat 'docker compose  --profile tests --env-file .env.test run --rm tests'
             }
         }
     }
 
     post {
         always {
-            sh 'docker compose down -v || true'
+            bat 'docker compose  --profile tests --env-file .env.test down -v || true'
         }
     }
 }
