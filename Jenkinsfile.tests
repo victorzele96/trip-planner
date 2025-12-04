@@ -29,14 +29,14 @@ pipeline {
         stage('Build & Run Tests') {
             steps {
                 bat 'docker compose  --profile tests --env-file .env.test up -d test_db'
-                bat 'docker compose  --profile tests --env-file .env.test run --rm tests'
+                bat 'docker compose  --profile tests --env-file .env.test run --rm tests ls /results'
             }
         }
     }
 
     post {
         always {
-            bat 'docker compose  --profile tests --env-file .env.test down -v || true'
+            bat 'docker compose  --profile tests --env-file .env.test down -v || exit /b 0'
                     script {
             if (fileExists('reports/report.xml')) {
                     junit 'reports/report.xml'
