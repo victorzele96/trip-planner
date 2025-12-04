@@ -36,8 +36,14 @@ pipeline {
 
     post {
         always {
-            junit 'reports/report.xml'
             bat 'docker compose  --profile tests --env-file .env.test down -v || true'
+                    script {
+            if (fileExists('reports/report.xml')) {
+                    junit 'reports/report.xml'
+                } else {
+                    echo "No test report found!"
+                }
+            }
         }
     }
 }
