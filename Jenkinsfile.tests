@@ -30,6 +30,7 @@ pipeline {
             steps {
                 bat 'docker compose  --profile tests --env-file .env.test up -d test_db'
                 bat 'docker compose  --profile tests --env-file .env.test run --rm tests ls /results'
+                bat 'docker compose --profile tests --env-file .env.test ps'
             }
         }
     }
