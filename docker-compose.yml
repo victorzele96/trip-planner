@@ -64,7 +64,9 @@ services:
       test_db:
         condition: service_healthy
     working_dir: /trip_planner
-    command: pytest -v tests
+    command: ["pytest", "--junitxml=/results/report.xml"]
+    volumes:
+    - ./reports:/results
 
 volumes:
   pgdata:
