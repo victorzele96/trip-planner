@@ -26,7 +26,7 @@ services:
     env_file:
       - .env
     ports:
-      - "${STREAMLIT_PORT}:${STREAMLIT_PORT}"
+      - "${STREAMLIT_PORT:-8501}:${STREAMLIT_PORT:-8501}"
     depends_on:
       - db
 
