@@ -5,7 +5,7 @@ pipeline {
     parameters {
         string(name: 'TAG_TO_DEPLOY', 
                defaultValue: 'latest', 
-               description: 'Enter the specific Build Number or Tag to deploy (e.g., 25).')
+               description: 'Enter the specific Build Number or Tag to deploy.')
     }
 
     environment {
