@@ -13,20 +13,33 @@ pipeline {
         DOCKER_IMAGE = 'victorzele96/trip_planner' 
         // Credentials ID for DB (stored securely in Jenkins)
         DB_CREDS = 'trip_db_user'
+        // Credentials ID for Docker Hub
+        DOCKER_HUB_CREDS = 'docker-hub-creds'	
     }
 
     stages {
         stage('Deploy Specific Version to Production') {
             steps {
                 script {
-                    echo "Starting deployment of version: ${params.TAG_TO_DEPLOY}"
-                    
                     //  Docker image and tag to deploy.
+                    echo "Starting deployment of version: ${params.TAG_TO_DEPLOY}"
                     def finalImageTag = "${env.DOCKER_IMAGE}:${params.TAG_TO_DEPLOY}"
 
                     // Pulling the specific image from Docker Hub (Docker Pull)
-                    bat "docker pull ${finalImageTag}"
-                    echo "Successfully pulled image: ${finalImageTag}"
+                    withCredentials([usernamePassword(credentialsId: env.DOCKER_HUB_CREDS, 
+                                                     usernameVariable: 'DOCKER_USER', 
+                                                     passwordVariable: 'DOCKER_PASS')]) {
+                        
+                        // docker login pull
+                        bat "docker login -u %DOCKER_USER% -p %DOCKER_PASS%"
+                        
+                        // Pulling the specific image from Docker Hub
+                        bat "docker pull ${finalImageTag}"
+                        echo "Successfully pulled image: ${finalImageTag}"
+                        
+                        //  docker logout
+                        bat "docker logout"
+                    }
                     
                     // Safely stopping existing containers (part of Atomic Deployment)
                     bat "docker compose --profile app down || exit /b 0"
