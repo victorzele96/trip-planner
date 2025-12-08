@@ -21,7 +21,7 @@ pipeline {
             }
             steps {
                 withCredentials([
-                    usernamePassword(credentialsId: 'trip_db_user', usernameVariable: 'DB_USER', passwordVariable: 'DB_PASSWORD'),
+                    usernamePassword(credentialsId: 'trip_db_user', usernameVariable: 'DB_USER_SECRET', passwordVariable: 'DB_PASSWORD_SECRET'),
                     string(credentialsId: 'DB_HOST', variable: 'DB_HOST'),
                     string(credentialsId: 'DB_PORT', variable: 'DB_PORT'),
                     string(credentialsId: 'DB_NAME', variable: 'DB_NAME'),
@@ -31,10 +31,15 @@ pipeline {
                     echo DB_HOST=%DB_HOST% > .env
                     echo DB_PORT=%DB_PORT% >> .env
                     echo DB_NAME=%DB_NAME% >> .env
-                    echo DB_USER=%DB_USER% >> .env
-                    echo DB_PASSWORD=%DB_PASSWORD% >> .env
+                    echo DB_USER=%DB_USER_SECRET% >> .env
+                    echo DB_PASSWORD=%DB_PASSWORD_SECRET% >> .env
                     echo STREAMLIT_PORT=%STREAMLIT_PORT% >> .env
                     """
+                    withEnv([
+                        "APP_IMAGE=${env.APP_IMAGE}",
+                        "DB_USER=${DB_USER_SECRET}",
+                        "DB_PASSWORD=${DB_PASSWORD_SECRET}"
+                    ]) {}
                 }
             }
         }
@@ -44,16 +49,20 @@ pipeline {
                 script {
                     if (params.ACTION == 'start') {
                         // Starting app profile
-                        bat "docker compose --profile app --env-file .env up -d --build"
-
-
+                        bat "docker compose --profile app --env-file .env up -d"
+                        
+                        withCredentials([string(credentialsId: 'STREAMLIT_PORT', variable: 'PORT')]) {
                             echo "===================================="
-                            echo " App is running:"
-                            echo " http://localhost:8501"
+                            echo " App is running (Control Start):"
+                            echo " http://localhost:${PORT}"
                             echo "===================================="
+                        }
                     } else {
                         // Stoping app profile
                         bat "docker compose --profile app down || exit /b 0"
+                        echo "===================================="
+                        echo " App is shut down (Control Stop)."
+                        echo "===================================="
                     }
                 }
             }
