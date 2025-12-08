@@ -10,7 +10,7 @@ pipeline {
 
     environment {
         // Full image name created in the CI job
-        DOCKER_IMAGE = 'victorzele96/trip_planner-app' 
+        DOCKER_IMAGE = 'victorzele96/trip_planner' 
         // Credentials ID for DB (stored securely in Jenkins)
         DB_CREDS = 'trip_db_user'
     }
@@ -58,7 +58,7 @@ pipeline {
                             
                              
                             echo "=================================================="
-                            
+
                             echo "DEPLOYMENT COMPLETE: Version ${params.TAG_TO_DEPLOY} is live"
                             echo "App URL: http://localhost:%STREAMLIT_PORT%"
 
