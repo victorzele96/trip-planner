@@ -32,6 +32,7 @@ pipeline {
                     string(credentialsId: 'STREAMLIT_PORT', variable: 'STREAMLIT_PORT')
                 ]) {
                     script {
+                        echo "DEBUG: Local Streamlit Port is: ${STREAMLIT_PORT}"
                         env.STREAMLIT_PORT_VAL = STREAMLIT_PORT
                     }
                     bat """
