@@ -32,7 +32,6 @@ pipeline {
                     string(credentialsId: 'STREAMLIT_PORT', variable: 'STREAMLIT_PORT')
                 ]) {
                     script {
-                        echo "DEBUG: Local Streamlit Port is: ${STREAMLIT_PORT}"
                         env.STREAMLIT_PORT_VAL = STREAMLIT_PORT
                     }
                     bat """
@@ -61,7 +60,7 @@ pipeline {
                         
                         echo "===================================="
                         echo " App is running (Control Start):"
-                        echo " http://localhost:${env.STREAMLIT_PORT_VAL}"
+                        echo " http://localhost:8501"
                         echo "===================================="
                     } else {
                         // Stoping app profile
