@@ -75,7 +75,7 @@ pipeline {
                             echo "=================================================="
 
                             echo "DEPLOYMENT COMPLETE: Version ${params.TAG_TO_DEPLOY} is live"
-                            echo "App URL: http://localhost:%STREAMLIT_PORT%"
+                            echo "App URL: http://localhost:${STREAMLIT_PORT}"
 
                             echo "=================================================="
                          }
