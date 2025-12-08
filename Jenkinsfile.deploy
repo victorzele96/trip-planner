@@ -1,0 +1,55 @@
+pipeline {
+    agent any
+
+    // 1. פרמטר: בחירת גרסה ידנית
+    parameters {
+        string(name: 'TAG_TO_DEPLOY', 
+               defaultValue: 'latest', 
+               description: 'Enter the specific Build Number or Tag to deploy (e.g., 25).')
+    }
+
+    environment {
+        // Full image name created in the CI job
+        DOCKER_IMAGE = 'victorzele96/trip_planner-app' 
+        // Credentials ID for DB (stored securely in Jenkins)
+        DB_CREDS = 'trip_db_user'
+    }
+
+    stages {
+        stage('Deploy Specific Version to Production') {
+            steps {
+                script {
+                    echo "Starting deployment of version: ${params.TAG_TO_DEPLOY}"
+                    
+                    //  Docker image and tag to deploy.
+                    def finalImageTag = "${env.DOCKER_IMAGE}:${params.TAG_TO_DEPLOY}"
+
+                    // Pulling the specific image from Docker Hub (Docker Pull)
+                    bat "docker pull ${finalImageTag}"
+                    echo "Successfully pulled image: ${finalImageTag}"
+                    
+                    // Safely stopping existing containers (part of Atomic Deployment)
+                    bat "docker compose --profile app down || exit /b 0"
+                    
+                    // Starting the new application with secured environment variables
+                    withCredentials([usernamePassword(credentialsId: env.DB_CREDS, usernameVariable: 'DB_USER', passwordVariable: 'DB_PASSWORD')]) {
+                         withEnv([
+                             "APP_IMAGE=${finalImageTag}", 
+                             "DB_USER=${DB_USER}", 
+                             "DB_PASSWORD=${DB_PASSWORD}"
+                         ]) {
+
+                             bat "docker compose --profile app up -d"
+                             
+                             echo "=================================================="
+                             echo "DEPLOYMENT COMPLETE: Version ${params.TAG_TO_DEPLOY} is live"
+                             echo "App URL: http://localhost:8501"
+
+                             echo "=================================================="
+                         }
+                    }
+                }
+            }
+        }
+    }
+}
