@@ -35,11 +35,6 @@ pipeline {
                     echo DB_PASSWORD=%DB_PASSWORD_SECRET% >> .env
                     echo STREAMLIT_PORT=%STREAMLIT_PORT% >> .env
                     """
-                    withEnv([
-                        "APP_IMAGE=${env.APP_IMAGE}",
-                        "DB_USER=${DB_USER_SECRET}",
-                        "DB_PASSWORD=${DB_PASSWORD_SECRET}"
-                    ]) {}
                 }
             }
         }
@@ -49,7 +44,7 @@ pipeline {
                 script {
                     if (params.ACTION == 'start') {
                         // Starting app profile
-                        bat "wsl docker compose --profile app --env-file .env up -d --force-recreate"
+                        bat "docker compose --project-name trip-planner --profile app --env-file .env up -d --force-recreate"
                         
                         echo "===================================="
                         echo " App is running (Control Start):"
@@ -57,7 +52,7 @@ pipeline {
                         echo "===================================="
                     } else {
                         // Stoping app profile
-                        bat "wsl docker compose down || exit /b 0"
+                        bat "docker compose --project-name trip-planner down || exit /b 0"
                         echo "===================================="
                         echo " App is shut down (Control Stop)."
                         echo "===================================="
