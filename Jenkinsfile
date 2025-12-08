@@ -49,7 +49,7 @@ pipeline {
                 script {
                     if (params.ACTION == 'start') {
                         // Starting app profile
-                        bat "docker compose --profile app --env-file .env up -d"
+                        bat "wsl docker compose --profile app --env-file .env up -d --force-recreate"
                         
                         withCredentials([string(credentialsId: 'STREAMLIT_PORT', variable: 'PORT')]) {
                             echo "===================================="
