@@ -59,7 +59,7 @@ pipeline {
                         }
                     } else {
                         // Stoping app profile
-                        bat "docker compose --profile app down || exit /b 0"
+                        bat "wsl docker compose down || exit /b 0"
                         echo "===================================="
                         echo " App is shut down (Control Stop)."
                         echo "===================================="
