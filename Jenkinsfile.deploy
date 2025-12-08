@@ -33,7 +33,7 @@ pipeline {
                     
                     // Starting the new application with secured environment variables
                     withCredentials([
-                         usernamePassword(credentialsId: env.DB_CREDS, usernameVariable: 'DB_USER', passwordVariable: 'DB_PASSWORD'),
+                         usernamePassword(credentialsId: env.DB_CREDS, usernameVariable: 'DB_USER_SECRET', passwordVariable: 'DB_PASSWORD_SECRET'),
                          string(credentialsId: 'DB_HOST', variable: 'DB_HOST'),
                          string(credentialsId: 'DB_PORT', variable: 'DB_PORT'),
                          string(credentialsId: 'DB_NAME', variable: 'DB_NAME'),
@@ -43,21 +43,22 @@ pipeline {
                             echo DB_HOST=%DB_HOST% > .env
                             echo DB_PORT=%DB_PORT% >> .env
                             echo DB_NAME=%DB_NAME% >> .env
-                            echo DB_USER=%DB_USER% >> .env
-                            echo DB_PASSWORD=%DB_PASSWORD% >> .env
+                            echo DB_USER=%DB_USER_SECRET% >> .env
+                            echo DB_PASSWORD=%DB_PASSWORD_SECRET% >> .env
                             echo STREAMLIT_PORT=%STREAMLIT_PORT% >> .env
                             """
 
                             withEnv([
-                             "APP_IMAGE=${finalImageTag}",
-                             "DB_USER=${DB_USER}", 
-                             "DB_PASSWORD=${DB_PASSWORD}"
+                            "APP_IMAGE=${finalImageTag}",
+                            "DB_USER=${DB_USER_SECRET}",
+                            "DB_PASSWORD=${DB_PASSWORD_SECRET}"
                          ]) {
                             bat "docker compose --profile app --env-file .env up -d"
                          }
                             
                              
                             echo "=================================================="
+                            
                             echo "DEPLOYMENT COMPLETE: Version ${params.TAG_TO_DEPLOY} is live"
                             echo "App URL: http://localhost:%STREAMLIT_PORT%"
 
