@@ -1,6 +1,10 @@
 pipeline {
     agent any
 
+    environment {
+        STREAMLIT_PORT_VAL = ''
+    }
+
     parameters {
         choice(name: 'ACTION', choices: ['start', 'stop'], description: 'Start or stop the app')
     }
@@ -27,6 +31,9 @@ pipeline {
                     string(credentialsId: 'DB_NAME', variable: 'DB_NAME'),
                     string(credentialsId: 'STREAMLIT_PORT', variable: 'STREAMLIT_PORT')
                 ]) {
+                    script {
+                        env.STREAMLIT_PORT_VAL = STREAMLIT_PORT
+                    }
                     bat """
                     echo DB_HOST=%DB_HOST% > .env
                     echo DB_PORT=%DB_PORT% >> .env
@@ -51,12 +58,10 @@ pipeline {
                         // Starting app profile
                         bat "wsl docker compose --profile app --env-file .env up -d --force-recreate"
                         
-                        withCredentials([string(credentialsId: 'STREAMLIT_PORT', variable: 'PORT')]) {
-                            echo "===================================="
-                            echo " App is running (Control Start):"
-                            echo " http://localhost:${PORT}"
-                            echo "===================================="
-                        }
+                        echo "===================================="
+                        echo " App is running (Control Start):"
+                        echo " http://localhost:${env.STREAMLIT_PORT_VAL}"
+                        echo "===================================="
                     } else {
                         // Stoping app profile
                         bat "wsl docker compose down || exit /b 0"
