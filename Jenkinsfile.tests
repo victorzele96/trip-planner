@@ -1,6 +1,12 @@
 pipeline {
     agent any
 
+    environment {
+        // Setting Docker Hub image name.
+        DOCKER_IMAGE = 'victorzele96/trip-planner'
+        REGISTRY_CREDS = 'docker-hub-creds'
+    }
+
     stages {
         stage('Checkout') {
             steps {
@@ -30,21 +36,50 @@ pipeline {
             steps {
                 bat 'docker compose  --profile tests --env-file .env.test up -d test_db'
                 bat 'docker compose  --profile tests --env-file .env.test run --rm tests'
-                bat 'docker compose  --profile tests --env-file .env.test run --rm tests ls /results'
             }
-        }
-    }
-
-    post {
-        always {
-            bat 'docker compose  --profile tests --env-file .env.test down -v || exit /b 0'
-                    script {
-            if (fileExists('reports/report.xml')) {
-                    junit 'reports/report.xml'
-                } else {
-                    echo "No test report found!"
+            post {
+                always {
+                    bat 'docker compose  --profile tests --env-file .env.test down -v || exit /b 0'
+                            script {
+                    if (fileExists('reports/report.xml')) {
+                            junit 'reports/report.xml'
+                        } else {
+                            echo "No test report found!"
+                        }
+                    }
                 }
             }
         }
+        
+
+        //
+        stage('Build & Push Final Image') {
+            when {
+                // Running if all the tests passed with SUCCESS.
+                expression { return currentBuild.result == 'SUCCESS' } 
+            }
+            steps {
+                script {
+                    def IMAGE_TAG = "${env.BUILD_NUMBER}"
+                    def FULL_IMAGE_NAME = "victorzele96/tripplanner:${IMAGE_TAG}" 
+                    
+                    //  Build image with app tag.
+                    bat "docker build -t ${FULL_IMAGE_NAME} ."
+
+                    // Push into Docker Hub 
+                    withCredentials([usernamePassword(credentialsId: 'docker-hub-creds', passwordVariable: 'DOCKER_PASS', usernameVariable: 'DOCKER_USER')]) {
+                        bat "docker login -u ${DOCKER_USER} -p ${DOCKER_PASS}"
+                        bat "docker push ${FULL_IMAGE_NAME}"
+                        //  Creating latest, poniting to last successfull version created.
+                        bat "docker tag ${FULL_IMAGE_NAME} victorzele96/tripplanner:latest"
+                        bat "docker push victorzele96/tripplanner:latest"
+                    }
+                    
+                    //  Save image tag for future Deployment.
+                    env.DEPLOY_TAG = IMAGE_TAG 
+                }
+            }
+        } 
+        //
     }
 }
