@@ -49,7 +49,7 @@ pipeline {
                 script {
                     if (params.ACTION == 'start') {
                         // Starting app profile
-                        bat "wsl docker compose --profile app --env-file .env up -d --force-recreate"
+                        bat "docker compose --profile app --env-file .env up -d --force-recreate"
                         
                         withCredentials([string(credentialsId: 'STREAMLIT_PORT', variable: 'PORT')]) {
                             echo "===================================="
@@ -59,7 +59,7 @@ pipeline {
                         }
                     } else {
                         // Stoping app profile
-                        bat "wsl docker compose down || exit /b 0"
+                        bat "docker compose down || exit /b 0"
                         echo "===================================="
                         echo " App is shut down (Control Stop)."
                         echo "===================================="
