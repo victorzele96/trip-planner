@@ -10,7 +10,7 @@ pipeline {
 
     environment {
         // Full image name created in the CI job
-        DOCKER_IMAGE = 'victorzele96/trip_planner' 
+        DOCKER_IMAGE = 'victorzele96/tripplanner' 
         // Credentials ID for DB (stored securely in Jenkins)
         DB_CREDS = 'trip_db_user'
         // Credentials ID for Docker Hub
