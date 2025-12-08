@@ -33,6 +33,8 @@ pipeline {
                         // docker login pull
                         bat "docker login -u %DOCKER_USER% -p %DOCKER_PASS%"
                         
+                        bat "docker builder prune -f"
+
                         // Pulling the specific image from Docker Hub
                         bat "docker pull ${finalImageTag}"
                         echo "Successfully pulled image: ${finalImageTag}"
