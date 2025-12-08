@@ -32,20 +32,36 @@ pipeline {
                     bat "docker compose --profile app down || exit /b 0"
                     
                     // Starting the new application with secured environment variables
-                    withCredentials([usernamePassword(credentialsId: env.DB_CREDS, usernameVariable: 'DB_USER', passwordVariable: 'DB_PASSWORD')]) {
-                         withEnv([
-                             "APP_IMAGE=${finalImageTag}", 
+                    withCredentials([
+                         usernamePassword(credentialsId: env.DB_CREDS, usernameVariable: 'DB_USER', passwordVariable: 'DB_PASSWORD'),
+                         string(credentialsId: 'DB_HOST', variable: 'DB_HOST'),
+                         string(credentialsId: 'DB_PORT', variable: 'DB_PORT'),
+                         string(credentialsId: 'DB_NAME', variable: 'DB_NAME'),
+                         string(credentialsId: 'STREAMLIT_PORT', variable: 'STREAMLIT_PORT')
+                        ]) {
+                            bat """
+                            echo DB_HOST=%DB_HOST% > .env
+                            echo DB_PORT=%DB_PORT% >> .env
+                            echo DB_NAME=%DB_NAME% >> .env
+                            echo DB_USER=%DB_USER% >> .env
+                            echo DB_PASSWORD=%DB_PASSWORD% >> .env
+                            echo STREAMLIT_PORT=%STREAMLIT_PORT% >> .env
+                            """
+
+                            withEnv([
+                             "APP_IMAGE=${finalImageTag}",
                              "DB_USER=${DB_USER}", 
                              "DB_PASSWORD=${DB_PASSWORD}"
                          ]) {
-
-                             bat "docker compose --profile app up -d"
+                            bat "docker compose --profile app --env-file .env up -d"
+                         }
+                            
                              
-                             echo "=================================================="
-                             echo "DEPLOYMENT COMPLETE: Version ${params.TAG_TO_DEPLOY} is live"
-                             echo "App URL: http://localhost:8501"
+                            echo "=================================================="
+                            echo "DEPLOYMENT COMPLETE: Version ${params.TAG_TO_DEPLOY} is live"
+                            echo "App URL: http://localhost:%STREAMLIT_PORT%"
 
-                             echo "=================================================="
+                            echo "=================================================="
                          }
                     }
                 }
