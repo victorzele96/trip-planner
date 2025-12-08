@@ -56,7 +56,7 @@ pipeline {
         stage('Build & Push Final Image') {
             when {
                 // Running if all the tests passed with SUCCESS.
-                expression { return currentBuild.result == 'SUCCESS' } 
+                expression { return currentBuild.result == null || currentBuild.result == 'SUCCESS' } 
             }
             steps {
                 script {
