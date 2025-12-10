@@ -68,7 +68,7 @@ pipeline {
                             "DB_USER=${DB_USER_SECRET}",
                             "DB_PASSWORD=${DB_PASSWORD_SECRET}"
                          ]) {
-                            bat "docker compose --profile app --env-file .env up -d"
+                            bat "docker compose --project-name trip-planner --profile app --env-file .env up -d"
                          }
                             
                              
