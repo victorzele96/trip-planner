@@ -21,12 +21,12 @@ pipeline {
                     string(credentialsId: 'DB_PORT_TEST', variable: 'DB_PORT_TEST'),
                     string(credentialsId: 'DB_NAME_TEST', variable: 'DB_NAME_TEST')
                 ]) {
-                    bat """
-                    echo DB_HOST=%DB_HOST_TEST% > .env.test
-                    echo DB_PORT=%DB_PORT_TEST% >> .env.test
-                    echo DB_NAME=%DB_NAME_TEST% >> .env.test
-                    echo DB_USER=%DB_USER% >> .env.test
-                    echo DB_PASSWORD=%DB_PASSWORD% >> .env.test
+                    sh """
+                    echo "DB_HOST=${DB_HOST_TEST}" > .env.test
+                    echo "DB_PORT=${DB_PORT_TEST}" >> .env.test
+                    echo "DB_NAME=${DB_NAME_TEST}" >> .env.test
+                    echo "DB_USER=${DB_USER}" >> .env.test
+                    echo "DB_PASSWORD=${DB_PASSWORD}" >> .env.test
                     """
                 }
             }
@@ -34,22 +34,22 @@ pipeline {
 
         stage('Build & Run Tests') {
             steps {
-                bat 'docker compose  --profile tests --env-file .env.test up -d test_db'
-                bat 'docker compose  --profile tests --env-file .env.test run --rm tests'
+                sh 'docker compose  --profile tests --env-file .env.test up -d test_db'
+                sh 'docker compose  --profile tests --env-file .env.test run --rm tests'
             }
             post {
                 always {
-                    bat 'docker compose  --profile tests --env-file .env.test down -v || exit /b 0'
-                            script {
-                    if (fileExists('reports/report.xml')) {
-                            junit 'reports/report.xml'
-                        } else {
-                            echo "No test report found!"
-                        }
+                    sh 'docker compose --profile tests --env-file .env.test down -v || true'
+                    script {
+                        if (fileExists('reports/report.xml')) {
+                                junit 'reports/report.xml'
+                            } else {
+                                echo "No test report found!"
+                            }
+                        
                     }
                 }
             }
-        }
         
 
         //
@@ -64,15 +64,15 @@ pipeline {
                     def FULL_IMAGE_NAME = "victorzele96/tripplanner:${IMAGE_TAG}" 
                     
                     //  Build image with app tag.
-                    bat "docker build -t ${FULL_IMAGE_NAME} ."
+                    sh "docker build -t ${FULL_IMAGE_NAME} ."
 
                     // Push into Docker Hub 
                     withCredentials([usernamePassword(credentialsId: 'docker-hub-creds', passwordVariable: 'DOCKER_PASS', usernameVariable: 'DOCKER_USER')]) {
-                        bat "docker login -u ${DOCKER_USER} -p ${DOCKER_PASS}"
-                        bat "docker push ${FULL_IMAGE_NAME}"
+                        sh "echo ${DOCKER_PASS} | docker login -u ${DOCKER_USER} --password-stdin"
+                        sh "docker push ${FULL_IMAGE_NAME}"
                         //  Creating latest, poniting to last successfull version created.
-                        bat "docker tag ${FULL_IMAGE_NAME} victorzele96/tripplanner:latest"
-                        bat "docker push victorzele96/tripplanner:latest"
+                        sh "docker tag ${FULL_IMAGE_NAME} victorzele96/tripplanner:latest"
+                        sh "docker push victorzele96/tripplanner:latest"
                     }
                     
                     //  Save image tag for future Deployment.
