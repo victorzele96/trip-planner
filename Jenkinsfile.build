@@ -46,10 +46,10 @@ pipeline {
                             } else {
                                 echo "No test report found!"
                             }
-                        
                     }
                 }
             }
+        }
         
 
         //
