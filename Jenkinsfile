@@ -48,7 +48,7 @@ pipeline {
                         
                         echo "===================================="
                         echo " App is running (Control Start):"
-                        echo " http://localhost:${STREAMLIT_PORT}"
+                        echo " http://localhost:${env.STREAMLIT_PORT}"
                         echo "===================================="
                     } else {
                         // Stoping app profile
