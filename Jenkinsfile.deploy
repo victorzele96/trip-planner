@@ -31,36 +31,36 @@ pipeline {
                                                      passwordVariable: 'DOCKER_PASS')]) {
                         
                         // docker login pull
-                        bat "docker login -u %DOCKER_USER% -p %DOCKER_PASS%"
+                        sh "echo ${DOCKER_PASS} | docker login -u ${DOCKER_USER} --password-stdin"
                         
-                        bat "docker builder prune -f"
+                        sh "docker builder prune -f"
 
                         // Pulling the specific image from Docker Hub
-                        bat "docker pull ${finalImageTag}"
+                        sh "docker pull ${finalImageTag}"
                         echo "Successfully pulled image: ${finalImageTag}"
                         
                         //  docker logout
-                        bat "docker logout"
+                        sh "docker logout"
                     }
                     
                     // Safely stopping existing containers (part of Atomic Deployment)
-                    bat "docker compose --profile app down || exit /b 0"
+                    sh "docker compose --profile app down || true"
                     
                     // Starting the new application with secured environment variables
                     withCredentials([
                          usernamePassword(credentialsId: env.DB_CREDS, usernameVariable: 'DB_USER_SECRET', passwordVariable: 'DB_PASSWORD_SECRET'),
-                         string(credentialsId: 'DB_HOST', variable: 'DB_HOST'),
-                         string(credentialsId: 'DB_PORT', variable: 'DB_PORT'),
-                         string(credentialsId: 'DB_NAME', variable: 'DB_NAME'),
-                         string(credentialsId: 'STREAMLIT_PORT', variable: 'STREAMLIT_PORT')
+                         string(credentialsId: 'DB_HOST', variable: 'DB_HOST_VAR'),
+                         string(credentialsId: 'DB_PORT', variable: 'DB_PORT_VAR'),
+                         string(credentialsId: 'DB_NAME', variable: 'DB_NAME_VAR'),
+                         string(credentialsId: 'STREAMLIT_PORT', variable: 'STREAMLIT_PORT_VAR')
                         ]) {
-                            bat """
-                            echo DB_HOST=%DB_HOST% > .env
-                            echo DB_PORT=%DB_PORT% >> .env
-                            echo DB_NAME=%DB_NAME% >> .env
-                            echo DB_USER=%DB_USER_SECRET% >> .env
-                            echo DB_PASSWORD=%DB_PASSWORD_SECRET% >> .env
-                            echo STREAMLIT_PORT=%STREAMLIT_PORT% >> .env
+                            sh """
+                            echo "DB_HOST=${DB_HOST_VAR}" > .env
+                            echo "DB_PORT=${DB_PORT_VAR}" >> .env
+                            echo "DB_NAME=${DB_NAME_VAR}" >> .env
+                            echo "DB_USER=${DB_USER_SECRET}" >> .env
+                            echo "DB_PASSWORD=${DB_PASSWORD_SECRET}" >> .env
+                            echo "STREAMLIT_PORT=${STREAMLIT_PORT_VAR}" >> .env
                             """
 
                             withEnv([
@@ -68,14 +68,14 @@ pipeline {
                             "DB_USER=${DB_USER_SECRET}",
                             "DB_PASSWORD=${DB_PASSWORD_SECRET}"
                          ]) {
-                            bat "docker compose --project-name trip-planner --profile app --env-file .env up -d"
+                            sh "docker compose --project-name trip-planner --profile app --env-file .env up -d"
                          }
                             
                              
                             echo "=================================================="
 
                             echo "DEPLOYMENT COMPLETE: Version ${params.TAG_TO_DEPLOY} is live"
-                            echo "App URL: http://localhost:${STREAMLIT_PORT}"
+                            echo "App URL: http://localhost:${STREAMLIT_PORT_VAR}"
 
                             echo "=================================================="
                          }
