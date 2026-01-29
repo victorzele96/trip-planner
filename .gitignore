@@ -35,3 +35,8 @@ Thumbs.db
 # Build files
 dist/
 build/
+
+# AWS files
+aws/
+awscliv2.zip
+install
