@@ -52,7 +52,7 @@ pipeline {
                         echo "===================================="
                     } else {
                         // Stoping app profile
-                        sh "docker compose --project-name trip-planner down || true"
+                        sh "docker compose --project-name trip-planner --profile app down || true"
                         echo "===================================="
                         echo " App is shut down (Control Stop)."
                         echo "===================================="
