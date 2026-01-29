@@ -44,7 +44,7 @@ pipeline {
                 script {
                     if (params.ACTION == 'start') {
                         // Starting app profile
-                        sh "docker compose --project-name trip-planner --profile app --env-file .env up -d --force-recreate"
+                        sh "docker compose --project-name trip-planner --profile app --env-file .env up -d --force-recreate app db"
                         
                         echo "===================================="
                         echo " App is running (Control Start):"
@@ -52,7 +52,7 @@ pipeline {
                         echo "===================================="
                     } else {
                         // Stoping app profile
-                        sh "docker compose --project-name trip-planner --profile app stop || true"
+                        sh "docker compose --project-name trip-planner --profile app stop app db || true"
                         echo "===================================="
                         echo " App is stopped (Control Stop)."
                         echo "===================================="
